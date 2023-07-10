@@ -28,8 +28,6 @@ function Lock-Device {
                 exit 0
             }
         }
-        $latest = Get-ChildItem -Path "C:\Temp" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-        Add-Content -Path $latest.FullName -Value "Done"
     } catch {
         Write-Output "Failed to lock the device"
         exit 1
