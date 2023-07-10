@@ -1,6 +1,6 @@
 function Check-IfRemediationRan {
     $generatehash = New-Guid
-    $NewFile = "C:\Temp\$($generatehash)-00"
+    $NewFile = "C:\Temp\$($generatehash).txt"
     if(Test-Path $NewFile){
         exit 0
     } else {
