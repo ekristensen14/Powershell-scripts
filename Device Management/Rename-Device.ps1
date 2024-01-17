@@ -1,7 +1,6 @@
 $clientID=""
 $secretValue=""
 $tenantID=""
-
 $logoUrl = ""
 
 $url = "https://login.microsoftonline.com/$tenantID/oauth2/v2.0/token"
@@ -147,11 +146,13 @@ if ($currentDeviceName -like "p44-*" -or $currentDeviceName -like "P44-*" -or $c
         $popup.Controls.Add($layoutPanel)
         $popup.ShowDialog()
 
-        $dialogResult = [System.Windows.Forms.MessageBox]::Show("Do you want to restart now?", "Restart", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        $dialogResult = [System.Windows.Forms.MessageBox]::Show("Do you want to restart now?", "Restart", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question, [System.Windows.Forms.MessageBoxDefaultButton]::Button2)
         if ($dialogResult -eq [System.Windows.Forms.DialogResult]::Yes) {
             Restart-Computer -Force
+        }else {
+            Write-Output "$(Get-Date) | User chose not to restart"
+            exit 0    
         }
-        exit 0    
     } catch {
         Write-Output "$(Get-Date) | Error: $_"
         Write-Output "$(Get-Date) |  + Exiting"
