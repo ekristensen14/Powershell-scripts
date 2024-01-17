@@ -1,9 +1,9 @@
-# Set variables
 $clientID=""
 $secretValue=""
 $tenantID=""
 
-# Generate access token
+$logoUrl = ""
+
 $url = "https://login.microsoftonline.com/$tenantID/oauth2/v2.0/token"
 $data = @{
     client_id = $clientID
@@ -95,11 +95,62 @@ if ($currentDeviceName -like "p44-*" -or $currentDeviceName -like "P44-*" -or $c
         Write-Output "$(Get-Date) |  + Device name changed"
         Write-Output "$(Get-Date) |  + Exiting"
         
-        # Notify the user that the device name has been changed
-        $title = "Device Name Change"
-        $message = "Your device name has been changed to $newDeviceName. Please restart your device to apply the change."
-        $wshell = New-Object -ComObject Wscript.Shell
-        $wshell.Popup($message,0,$title,0x1)
+        # Notify the user that the device name has been changed. Include company logo in the popup
+        $logo = $env:TEMP + "\logo.png"
+        Invoke-WebRequest -Uri $logoUrl -OutFile $logo
+        $title = "Device Name Changed"
+        $message = "Your device name has been changed to $newDeviceName."
+        $message4 = "Please restart your device to apply the change."
+        $message2 = "Thank you for your cooperation."
+        $message3 = "project44 IT Team"
+        $message5 = "(Press Enter to close this window)"
+        $combined = "$message`n`n$message4`n`n$message2`n`n$message3`n`n`n`n$message5"
+        Add-Type -AssemblyName System.Windows.Forms
+        $popup = New-Object System.Windows.Forms.Form
+        $popup.Text = $title
+        $popup.Width = 700
+        $popup.Height = 300
+        $popup.StartPosition = "CenterScreen"
+        $popup.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
+        $popup.Topmost = $true
+        $popup.ShowInTaskbar = $false
+        $popup.BackColor = "#ffffff"
+        $popup.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Point)
+        $popup.ForeColor = "#000000"
+        $popup.KeyPreview = $true
+        
+        $popup.Add_KeyDown({
+            if ($_.KeyCode -eq "Enter") { 
+                $popup.Close() 
+            } 
+        })
+        
+        $layoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
+        $layoutPanel.RowCount = 1
+        $layoutPanel.ColumnCount = 2
+        $layoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+        
+        $label = New-Object System.Windows.Forms.Label
+        $label.Text = $combined
+        $label.AutoSize = $true
+        $label.Anchor = [System.Windows.Forms.AnchorStyles]::Left
+        $label.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+        
+        $pictureBox = New-Object System.Windows.Forms.PictureBox
+        $pictureBox.Image = [System.Drawing.Image]::FromFile($logo)
+        $pictureBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+        $pictureBox.Anchor = [System.Windows.Forms.AnchorStyles]::Right
+        
+        $layoutPanel.Controls.Add($label, 0, 0)
+        $layoutPanel.Controls.Add($pictureBox, 1, 0)
+        
+        $popup.Controls.Add($layoutPanel)
+        $popup.ShowDialog()
+
+        $dialogResult = [System.Windows.Forms.MessageBox]::Show("Do you want to restart now?", "Restart", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($dialogResult -eq [System.Windows.Forms.DialogResult]::Yes) {
+            Restart-Computer -Force
+        }
         exit 0    
     } catch {
         Write-Output "$(Get-Date) | Error: $_"
